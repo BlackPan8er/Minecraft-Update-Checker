@@ -27,7 +27,7 @@ class MenuClass:
 
                 if self.HandleInput() == True: #returned only if enter was pressed
                     if self.CurOpt == 0:
-                        pass #edit projects
+                        menu.EditProjectsMenu.execute()    
                     elif self.CurOpt == 1:
                         quit(0)
                 
@@ -41,9 +41,51 @@ class MenuClass:
                 self.CurOpt +=1
             elif key == readchar.key.ENTER:
                 return True
+    
+    class EditProjectsMenuClass:
+        def __init__(self):
+            self.Options = ["Add Projects", "Remove Projects", "View Info", "<-- Main Menu"]
+            self.CurOpt = 0
+        
+        def execute(self):
+            while True:
+                menu.clear() #clear screen
+                print(len(self.Options))
+                for i in range(len(self.Options)):
+                    prefix = ">>>> " if self.CurOpt == i else "     "
+                    title = self.Options[i]
+                    print(f"{prefix}{title}")
+
+                if self.HandleInput() == True: #returned only if enter was pressed
+                    if self.CurOpt == 0:
+                        pass #add projects
+                    elif self.CurOpt == 1:
+                        pass # remove projects
+                    elif self.CurOpt == 2:
+                        pass # View info
+                    elif self.CurOpt == 3:
+                        break #return to main menu
+
+        
+        def HandleInput(self):
+            key = readchar.readkey()
+            if key == readchar.key.UP and self.CurOpt != 0:
+                self.CurOpt -= 1
+            elif key == readchar.key.DOWN and self.CurOpt != len(self.Options):
+                self.CurOpt +=1
+            elif key == readchar.key.ENTER:
+                return True
+
+
+
+
+
+
+
 
     def __init__(self):
         self.main = self.MainClass()
+        self.EditProjectsMenu = self.EditProjectsMenuClass()
         logger.debug("MenuClass done")
 
     def clear(self):
