@@ -1,95 +1,99 @@
-import requests, json, readchar, os, time
+from loguru import logger
+import sys
+import readchar
+import os
 
-class menu:
+DEBUG = True
+
+logger.remove() #remove default sink because it also logs debug messages
+logger.add(sys.stderr, format="|{time}| - |{level}| - | {message}", level="DEBUG" if DEBUG == True else "INFO") #add our own sink because we can control if it has debug messages or not
+
+
+
+class MenuClass:
+
+    class MainClass:
+        def __init__(self):
+            self.Options = ["Edit Projects", "Quit"]
+            self.CurOpt = 0
+        
+        def Execute(self):
+            while True:
+                menu.clear() #clear screen
+                for i in range(len(self.Options)):
+                    prefix = ">>>> " if self.CurOpt == i else "     "
+                    title = self.Options[i]
+                    print(f"{prefix}{title}")
+
+                if self.HandleInput() == True: #returned only if enter was pressed
+                    if self.CurOpt == 0:
+                        menu.EditProjectsMenu.execute()    
+                    elif self.CurOpt == 1:
+                        quit(0)
+                
+
+        
+        def HandleInput(self):
+            key = readchar.readkey()
+            if key == readchar.key.UP and self.CurOpt != 0:
+                self.CurOpt -= 1
+            elif key == readchar.key.DOWN and self.CurOpt != len(self.Options):
+                self.CurOpt +=1
+            elif key == readchar.key.ENTER:
+                return True
+    
+    class EditProjectsMenuClass:
+        def __init__(self):
+            self.Options = ["Add Projects", "Remove Projects", "View Info", "<-- Main Menu"]
+            self.CurOpt = 0
+        
+        def execute(self):
+            while True:
+                menu.clear() #clear screen
+                print(len(self.Options))
+                for i in range(len(self.Options)):
+                    prefix = ">>>> " if self.CurOpt == i else "     "
+                    title = self.Options[i]
+                    print(f"{prefix}{title}")
+
+                if self.HandleInput() == True: #returned only if enter was pressed
+                    if self.CurOpt == 0:
+                        pass #TODO Add projects
+                    elif self.CurOpt == 1:
+                        pass #TODO remove projects
+                    elif self.CurOpt == 2:
+                        pass #TODO view projects
+                    elif self.CurOpt == 3:
+                        break #return to main menu
+
+        
+        def HandleInput(self):
+            key = readchar.readkey()
+            if key == readchar.key.UP and self.CurOpt != 0:
+                self.CurOpt -= 1
+            elif key == readchar.key.DOWN and self.CurOpt != len(self.Options):
+                self.CurOpt +=1
+            elif key == readchar.key.ENTER:
+                return True
+
+
+
+
+
+
+
+
     def __init__(self):
-        self.CurOption = 0
-        self.SelectedProjects = []
+        self.main = self.MainClass()
+        self.EditProjectsMenu = self.EditProjectsMenuClass()
+        logger.debug("MenuClass done")
 
     def clear(self):
-        os.system("cls" if os.name == "nt" else "clear")
+        if os.name == 'posix': #linux or macOS
+            os.system("clear")
+        elif os.name == 'nt': #windows
+            os.system("cls")
 
+menu = MenuClass()
 
-
-    def Main(self):
-        options = ["1. Add Plugin", "2. Quit"]
-        CurOption = 0
-        while True:
-            self.clear()
-            for i in range(len(options)):
-                prefix = ">> " if CurOption == i else "   "
-                title = options[i]
-                print(f"{prefix}{title}")
-            key = readchar.readkey()
-            if key == readchar.key.UP and CurOption != 0:
-                CurOption -= 1
-            elif key == readchar.key.DOWN and CurOption != len(options):
-                CurOption += 1
-            elif key == readchar.key.ENTER:
-                if CurOption == 0:
-                    self.SearchProjects()
-                elif CurOption == 1:
-                    quit(1)
-                else:
-                    print("\n\n\n\n\n\nERROR ERROR ERROR\n\n\n")
-                    quit(0)
-
-
-
-    def SearchProjects(self):
-        ####################################################################################################
-        self.SearchQuery = input("Enter query\n  >>>")
-        RequestParams = {
-            "query": self.SearchQuery,
-            "index": "relevance",
-            "facets": json.dumps([["project_type:plugin"]])
-        }
-        RequestResponse = requests.get("https://api.modrinth.com/v2/search", params=RequestParams)
-        ResponseData = RequestResponse.json()
-
-        self.FoundPlugins = {}
-        for i in ResponseData["hits"]:
-            self.FoundPlugins[i["title"]] = {
-                "title": i["title"],
-                "downloads": i["downloads"]
-            }
-
-        self.DisplayResults()
-        #for j in FoundPlugins:
-        #    print(f"Title: {FoundPlugins[j]["title"]}\nDownloads: {FoundPlugins[j]["downloads"]:,}")
-        ####################################################################################################
-
-    def DisplayResults(self):
-        while True:
-            self.clear()
-            for i, (title, project) in enumerate(self.FoundPlugins.items()):
-                prefix = ">>>>> " if i == self.CurOption else ""
-                title = project["title"]
-                downloads = project["downloads"]
-                print(f"{prefix}{title} -- {downloads} ⬇️")
-                if i == self.CurOption:
-                    self.SelectedOption = project
-
-            if self.HandleInput():
-                if not self.SelectedOption in self.SelectedProjects:
-                    self.SelectedProjects.append(self.SelectedOption)
-                    self.clear()
-                    print(f"Added New Project To List:\n\n{project["title"]}\nDownloads: {project["downloads"]}\n  Description: NOT IMPLEMENTED")
-                    time.sleep(1)
-                break
-
-    def HandleInput(self):
-        key = readchar.readkey()
-        if key == readchar.key.UP and self.CurOption != 0:
-            self.CurOption -= 1
-        
-        elif key == readchar.key.DOWN and self.CurOption != len(self.FoundPlugins)-1:
-            self.CurOption += 1
-        
-        elif key == readchar.key.ENTER:
-            return True #gets handled by DisplayResults()
-            
-
-
-Menu = menu()
-
-Menu.Main()
+menu.main.Execute()
