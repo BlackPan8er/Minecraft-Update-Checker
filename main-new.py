@@ -58,11 +58,11 @@ class MenuClass:
 
                 if self.HandleInput() == True: #returned only if enter was pressed
                     if self.CurOpt == 0:
-                        pass #add projects
+                        pass #TODO Add projects
                     elif self.CurOpt == 1:
-                        pass # remove projects
+                        pass #TODO remove projects
                     elif self.CurOpt == 2:
-                        pass # View info
+                        pass #TODO view projects
                     elif self.CurOpt == 3:
                         break #return to main menu
 
