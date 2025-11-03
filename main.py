@@ -16,31 +16,15 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
         def __init__(self):
             self.Options = ["Edit Projects", "Quit"] #the options of the menu
             self.CurOpt = 0 #the current option selected
+            self.MenuName = "          <<<< Main Menu >>>>"
         
         def Execute(self): #called to trigger (execute) the menu
-            while True:
-                menu.clear() #clear screen
-                for i in range(len(self.Options)): #goes and prints every option on a new line, also adds a prefix (>>> ) to the selected option (CurOpt)
-                    prefix = ">>>> " if self.CurOpt == i else "     "
-                    title = self.Options[i]
-                    print(f"{prefix}{title}")
-
-                if self.HandleInput() == True: #Handles input (duh), see below for more. Returns True only if Enter is pressed, then we do the corresponding action to the current option selected, if its false we continue the While True loop
-                    if self.CurOpt == 0: # Corresponds to Edit Projects
-                        menu.EditProjectsMenu.execute()    
-                    elif self.CurOpt == 1: # Corresponds to Quit
-                        quit(0)
-                
-
-        
-        def HandleInput(self): #Reads which key is pressed, then adjusts the CurOpt as needed
-            key = readchar.readkey() #reads the key
-            if key == readchar.key.UP and self.CurOpt != 0: # if up is pressed and its not already on the top-most option then go one option up
-                self.CurOpt -= 1 
-            elif key == readchar.key.DOWN and self.CurOpt != len(self.Options): #if down is pressed and its not already on the down-most option then go one option down
-                self.CurOpt +=1
-            elif key == readchar.key.ENTER: #if enter is pressed return True, then the above function runs the corresponding action
-                return True
+            Result = menu.StartMenu(self.Options, self.MenuName)
+            if not Result == None:
+                if Result == 0:
+                    menu.EditProjectsMenu.execute()
+                if Result == 1:
+                    quit(0)
     
     class EditProjectsMenuClass:
         def __init__(self):
@@ -111,16 +95,17 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
             
             if key == readchar.key.UP and CurOpt != 0:
                 CurOpt -= 1
-            elif key == readchar.key.DOWN and CurOpt < len(options):
+            elif key == readchar.key.DOWN and CurOpt != len(options)-1:
                 CurOpt += 1
             elif key == readchar.key.ENTER:
-                return True
+                return CurOpt
             elif key == "Q" or key == "q":
-                break
+                return None
                 
 
 
 
 menu = MenuClass()
 
-menu.main.Execute()
+while True:
+    menu.main.Execute()
