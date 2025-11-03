@@ -123,9 +123,4 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
 
 menu = MenuClass()
 
-#menu.main.Execute()
-
-TestOptions = ["test 1", "test 2", "test 3"]
-TestTitle = "Test menu"
-
-menu.StartMenu(TestOptions, TestTitle)
+menu.main.Execute()
