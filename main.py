@@ -93,7 +93,39 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
             os.system("clear")
         elif os.name == 'nt': #windows
             os.system("cls")
+    
+    def StartMenu(self, options: list, MenuTitle: str):
+        CurOpt = 0
+        while True:
+            menu.clear()
+            print(MenuTitle, "\n")
+            for i in range(len(options)):
+                prefix = ">>>> " if i == CurOpt else "     "
+                title = options[i]
+                print(f"{prefix}{title}")
+
+            print("\n\n\nNavigate using the UP/DOWN arrows, select with ENTER and exit with Q")
+
+            # Handle input
+            key: readchar.key = readchar.readkey()
+            
+            if key == readchar.key.UP and CurOpt != 0:
+                CurOpt -= 1
+            elif key == readchar.key.DOWN and CurOpt < len(options):
+                CurOpt += 1
+            elif key == readchar.key.ENTER:
+                return True
+            elif key == "Q" or key == "q":
+                break
+                
+
+
 
 menu = MenuClass()
 
-menu.main.Execute()
+#menu.main.Execute()
+
+TestOptions = ["test 1", "test 2", "test 3"]
+TestTitle = "Test menu"
+
+menu.StartMenu(TestOptions, TestTitle)
