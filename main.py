@@ -16,7 +16,7 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
         def __init__(self):
             self.Options = ["Edit Projects", "Quit"] #the options of the menu
             self.CurOpt = 0 #the current option selected
-            self.MenuName = "          <<<< Main Menu >>>>"
+            self.MenuName = "Main Menu"
         
         def Execute(self): #called to trigger (execute) the menu
             Result = menu.StartMenu(self.Options, self.MenuName)
@@ -28,37 +28,21 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
     
     class EditProjectsMenuClass:
         def __init__(self):
-            self.Options = ["Add Projects", "Remove Projects", "View Info", "<-- Main Menu"]
+            self.Options = ["Add Projects", "Remove Projects", "View Info", "<< Back"]
+            self.MenuTitle = "Edit Projects"
             self.CurOpt = 0
         
         def execute(self):
-            while True:
-                menu.clear() #clear screen
-                print(len(self.Options))
-                for i in range(len(self.Options)):
-                    prefix = ">>>> " if self.CurOpt == i else "     "
-                    title = self.Options[i]
-                    print(f"{prefix}{title}")
-
-                if self.HandleInput() == True: #returned only if enter was pressed
-                    if self.CurOpt == 0:
-                        pass #TODO Add projects
-                    elif self.CurOpt == 1:
-                        pass #TODO remove projects
-                    elif self.CurOpt == 2:
-                        pass #TODO view projects
-                    elif self.CurOpt == 3:
-                        break #return to main menu
-
-        
-        def HandleInput(self):
-            key = readchar.readkey()
-            if key == readchar.key.UP and self.CurOpt != 0:
-                self.CurOpt -= 1
-            elif key == readchar.key.DOWN and self.CurOpt != len(self.Options):
-                self.CurOpt +=1
-            elif key == readchar.key.ENTER:
-                return True
+            Result = menu.StartMenu(self.Options, self.MenuTitle)
+            if not Result == None:
+                if Result == 0:
+                    pass # Add projects
+                elif Result == 1:
+                    pass # Remove Projects
+                elif Result == 2:
+                    pass # View Projects
+                elif Result == 3:
+                    pass # Back to main menu
 
 
 
