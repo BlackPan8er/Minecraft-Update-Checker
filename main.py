@@ -2,12 +2,32 @@ from loguru import logger #logger (duh)
 import sys                # needed by the logger to be used as a sink (output)
 import readchar           # needed for the menus, detects when a key is pressed, like up-arrow
 import os                 # needed for the menus to clear the screen, also will be needed by other stuff
+import time
 
 DEBUG = True
 
 logger.remove() #remove default sink because it also logs debug messages
 logger.add(sys.stderr, format="|{time}| - |{level}| - | {message}", level="DEBUG" if DEBUG == True else "INFO") #add our own sink because we can control if it has debug messages or not
 
+
+class ProjectsClass:
+    def __init__(self):
+        self.addProjects = self.AddProjectsClass()
+        self.selectedProjects = {}
+
+    class AddProjectsClass:
+        def __init__(self):
+            pass
+
+        def bySearch(self):
+            menu.clear()
+            print("!not implemented!")
+            time.sleep(1)
+
+        def byID(self):
+            menu.clear()
+            print("!not implemented!")
+            time.sleep(1)
 
 
 class MenuClass: #Inside these are all the menus, this make it easy to trigger menus by doing menu.menuyouwanttotrigger.execute()
@@ -27,7 +47,25 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
                     quit(0)
     
     class EditProjectsMenuClass:
+
+
+        class AddProjectsMenuClass:
+            def __init__(self):
+                self.Options = ["Search", "Add by ID"]
+                self.MenuTitle = "Add projects"
+                self.CurOpt = 0
+            def execute(self):
+                result = menu.StartMenu(self.Options, self.MenuTitle)
+                if not result == None:
+                    if result == 0:
+                        pass    #Search projects
+                    elif result == 1:
+                        pass    #Add by ID
+
+
         def __init__(self):
+            self.AddProjectsMenu = self.AddProjectsMenuClass()
+
             self.Options = ["Add Projects", "Remove Projects", "View Info", "<< Back"]
             self.MenuTitle = "Edit Projects"
             self.CurOpt = 0
@@ -36,19 +74,14 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
             Result = menu.StartMenu(self.Options, self.MenuTitle)
             if not Result == None:
                 if Result == 0:
-                    pass # Add projects
+                    menu.EditProjectsMenu.AddProjectsMenu.execute() # Add projects
                 elif Result == 1:
                     pass # Remove Projects
                 elif Result == 2:
                     pass # View Projects
                 elif Result == 3:
                     pass # Back to main menu
-
-
-
-
-
-
+    
 
 
     def __init__(self):
