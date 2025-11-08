@@ -3,6 +3,8 @@ import sys                # needed by the logger to be used as a sink (output)
 import readchar           # needed for the menus, detects when a key is pressed, like up-arrow
 import os                 # needed for the menus to clear the screen, also will be needed by other stuff
 import time
+import json
+import requests
 
 DEBUG = True
 
@@ -17,17 +19,55 @@ class ProjectsClass:
 
     class AddProjectsClass:
         def __init__(self):
-            pass
+            self.projectsToAdd = {}
 
         def bySearch(self):
             menu.clear()
-            print("!not implemented!")
-            time.sleep(1)
+
+            query = input("\nEnter Search Query\n  >>>>")
+            print(f">>>> Searching for '{query}'...")
+            requestParams = {
+                "query": query,
+                "index": "relevance",
+                "facets": json.dumps([["project_type:plugin"]]),
+                "limit": 30
+            }
+
+            requestResponse = requests.get("https://api.modrinth.com/v2/search", params=requestParams)
+            for i in requestResponse.json()["hits"]:
+                self.projectsToAdd[i["title"]] = {
+                    "title": i["title"],
+                    "downloads": i["downloads"],
+                    "ID": i["project_id"]
+                }
+            
+            self.projectsToAddNum = menu.StartMenu(list(self.projectsToAdd.keys()), "Request Results", True)
+            
+
+            keys = list(self.projectsToAdd.keys())
+            for idx in self.projectsToAddNum:
+                key = keys[idx]
+                projects.selectedProjects[key] = self.projectsToAdd[key]
+              
+      
+
 
         def byID(self):
             menu.clear()
             print("!not implemented!")
             time.sleep(1)
+    
+    def RemoveProjects(self):
+        Title = "Remove Projects"
+        options = projects.selectedProjects["title"]
+
+        numsToRemove = menu.StartMenu(options, Title, True)
+
+        for i, v in enumerate(projects.selectedProjects):
+            if i in numsToRemove:
+                del projects.selectedProjects[v]
+            
+
 
 
 class MenuClass: #Inside these are all the menus, this make it easy to trigger menus by doing menu.menuyouwanttotrigger.execute()
@@ -39,10 +79,10 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
             self.MenuName = "Main Menu"
         
         def Execute(self): #called to trigger (execute) the menu
-            Result = menu.StartMenu(self.Options, self.MenuName)
+            Result = menu.StartMenu(self.Options, self.MenuName, False)
             if not Result == None:
                 if Result == 0:
-                    menu.EditProjectsMenu.execute()
+                    menu.EditProjects.execute()
                 if Result == 1:
                     quit(0)
     
@@ -55,12 +95,13 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
                 self.MenuTitle = "Add projects"
                 self.CurOpt = 0
             def execute(self):
-                result = menu.StartMenu(self.Options, self.MenuTitle)
+                result = menu.StartMenu(self.Options, self.MenuTitle, False)
                 if not result == None:
                     if result == 0:
-                        pass    #Search projects
+                        projects.addProjects.bySearch()
                     elif result == 1:
-                        pass    #Add by ID
+                        projects.addProjects.byID()
+  
 
 
         def __init__(self):
@@ -71,12 +112,12 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
             self.CurOpt = 0
         
         def execute(self):
-            Result = menu.StartMenu(self.Options, self.MenuTitle)
+            Result = menu.StartMenu(self.Options, self.MenuTitle, False)
             if not Result == None:
                 if Result == 0:
-                    menu.EditProjectsMenu.AddProjectsMenu.execute() # Add projects
+                    menu.EditProjects.AddProjectsMenu.execute() # Add projects
                 elif Result == 1:
-                    pass # Remove Projects
+                    pass #remove projects, needs fixing
                 elif Result == 2:
                     pass # View Projects
                 elif Result == 3:
@@ -86,7 +127,7 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
 
     def __init__(self):
         self.main = self.MainClass()
-        self.EditProjectsMenu = self.EditProjectsMenuClass()
+        self.EditProjects = self.EditProjectsMenuClass()
         logger.debug("MenuClass done")
 
     def clear(self):
@@ -95,34 +136,75 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
         elif os.name == 'nt': #windows
             os.system("cls")
     
-    def StartMenu(self, options: list, MenuTitle: str):
-        CurOpt = 0
-        while True:
-            menu.clear()
-            print(MenuTitle, "\n")
-            for i in range(len(options)):
-                prefix = ">>>> " if i == CurOpt else "     "
-                title = options[i]
-                print(f"{prefix}{title}")
+    def StartMenu(self, options: list, MenuTitle: str, isSelection: bool):
 
-            print("\n\n\nNavigate using the UP/DOWN arrows, select with ENTER and exit with Q")
-
-            # Handle input
-            key: readchar.key = readchar.readkey()
+        if isSelection == True:
             
-            if key == readchar.key.UP and CurOpt != 0:
-                CurOpt -= 1
-            elif key == readchar.key.DOWN and CurOpt != len(options)-1:
-                CurOpt += 1
-            elif key == readchar.key.ENTER:
-                return CurOpt
-            elif key == "Q" or key == "q":
-                return None
+            CurOpt = 0
+            selectedOptions = []
+            while True:
+                menu.clear()
+                print(MenuTitle, "\n")
+                for i in range(len(options)):
+                    prefix = ">>>> " if i == CurOpt else "     "
+                    selectionPrefix = "[x] " if i in selectedOptions else "[]  "
+                    title = options[i]
+                    print(f"{prefix}{selectionPrefix}{title}")
+
+                print("\n\n\nNavigate using the UP/DOWN arrows, select with ENTER and exit with Q")
+
+                # Handle input
+                key: readchar.key = readchar.readkey()
+                
+                if key == readchar.key.UP and CurOpt != 0:
+                    CurOpt -= 1
+
+                elif key == readchar.key.DOWN and CurOpt != len(options)-1:
+                    CurOpt += 1
+
+                elif key == readchar.key.SPACE:
+                    if not CurOpt in selectedOptions:
+                        selectedOptions.append(CurOpt)
+                    else:
+                        selectedOptions.remove(CurOpt)
+
+                elif key == readchar.key.ENTER:
+                    return selectedOptions
+                elif key == "Q" or key == "q":
+                    return None
+
+        else:
+
+            CurOpt = 0
+            while True:
+                menu.clear()
+                print(MenuTitle, "\n")
+                for i in range(len(options)):
+                    prefix = ">>>> " if i == CurOpt else "     "
+                    title = options[i]
+                    print(f"{prefix}{title}")
+
+                print("\n\n\nNavigate using the UP/DOWN arrows, select with ENTER and exit with Q")
+
+                # Handle input
+                key: readchar.key = readchar.readkey()
+                
+                if key == readchar.key.UP and CurOpt != 0:
+                    CurOpt -= 1
+                elif key == readchar.key.DOWN and CurOpt != len(options)-1:
+                    CurOpt += 1
+                elif key == readchar.key.ENTER:
+                    return CurOpt
+                elif key == "Q" or key == "q":
+                    return None
                 
 
 
 
 menu = MenuClass()
+projects = ProjectsClass()
+
 
 while True:
     menu.main.Execute()
+
