@@ -22,13 +22,13 @@ class ProjectsClass:
             self.projectsToAdd = {}
 
         def bySearch(self):
+            self.projectsToAdd = {}
             menu.clear()
 
             query = input("\nEnter Search Query\n  >>>>")
             print(f">>>> Searching for '{query}'...")
             requestParams = {
                 "query": query,
-                "index": "relevance",
                 "facets": json.dumps([["project_type:plugin"]]),
                 "limit": 20
             }
@@ -38,10 +38,15 @@ class ProjectsClass:
                 self.projectsToAdd[i["title"]] = {
                     "title": i["title"],
                     "downloads": i["downloads"],
+                    "author": i["author"],
                     "ID": i["project_id"]
                 }
+
+            self.ProjectsToAddFormatted = []
+            for i in self.projectsToAdd.values():
+                self.ProjectsToAddFormatted.append(f"{i['title']}   -   {i['downloads']:,} downloads   -   {i['author']}    ({i['ID']})")
             
-            self.projectsToAddNum = menu.StartMenu(list(self.projectsToAdd.keys()), "Request Results", True)
+            self.projectsToAddNum = menu.StartMenu(list(self.ProjectsToAddFormatted), "Request Results", True)
             
             if not self.projectsToAddNum == None:
                 for i in self.projectsToAddNum:
