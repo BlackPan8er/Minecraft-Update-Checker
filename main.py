@@ -30,7 +30,7 @@ class ProjectsClass:
                 "query": query,
                 "index": "relevance",
                 "facets": json.dumps([["project_type:plugin"]]),
-                "limit": 30
+                "limit": 20
             }
 
             requestResponse = requests.get("https://api.modrinth.com/v2/search", params=requestParams)
@@ -43,13 +43,10 @@ class ProjectsClass:
             
             self.projectsToAddNum = menu.StartMenu(list(self.projectsToAdd.keys()), "Request Results", True)
             
-
-            keys = list(self.projectsToAdd.keys())
-            for idx in self.projectsToAddNum:
-                key = keys[idx]
-                projects.selectedProjects[key] = self.projectsToAdd[key]
-              
-      
+            if not self.projectsToAddNum == None:
+                for i in self.projectsToAddNum:
+                    title = list(self.projectsToAdd.keys())[i]
+                    projects.selectedProjects[title] = self.projectsToAdd[title]
 
 
         def byID(self):
@@ -59,16 +56,19 @@ class ProjectsClass:
     
     def RemoveProjects(self):
         Title = "Remove Projects"
-        options = projects.selectedProjects["title"]
-
+        options = list(projects.selectedProjects.keys())
+        
         numsToRemove = menu.StartMenu(options, Title, True)
 
-        for i, v in enumerate(projects.selectedProjects):
-            if i in numsToRemove:
-                del projects.selectedProjects[v]
-            
+        if not numsToRemove == None:
+            titlesToRemove = []
+            for i in numsToRemove:
+                titlesToRemove.append(options[i])
 
 
+            for title in titlesToRemove:
+                del projects.selectedProjects[title]
+        
 
 class MenuClass: #Inside these are all the menus, this make it easy to trigger menus by doing menu.menuyouwanttotrigger.execute()
 
@@ -117,7 +117,7 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
                 if Result == 0:
                     menu.EditProjects.AddProjectsMenu.execute() # Add projects
                 elif Result == 1:
-                    pass #remove projects, needs fixing
+                    projects.RemoveProjects()
                 elif Result == 2:
                     pass # View Projects
                 elif Result == 3:
