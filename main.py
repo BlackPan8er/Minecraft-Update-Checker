@@ -73,7 +73,16 @@ class ProjectsClass:
 
             for title in titlesToRemove:
                 del projects.selectedProjects[title]
+    
+    def ViewProjects(self):
+        Title = "Selected Projects"
+        optionsRaw: dict = projects.selectedProjects
+        options = []
+
+        for i in optionsRaw.values():
+            options.append(f"{i['title']}   -   {i['downloads']:,} downloads   -   {i['author']}    ({i['ID']})")
         
+        menu.StartMenu(options, Title, False)
 
 class MenuClass: #Inside these are all the menus, this make it easy to trigger menus by doing menu.menuyouwanttotrigger.execute()
 
@@ -124,7 +133,7 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
                 elif Result == 1:
                     projects.RemoveProjects()
                 elif Result == 2:
-                    pass # View Projects
+                    projects.ViewProjects()
                 elif Result == 3:
                     pass # Back to main menu
     
