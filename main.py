@@ -5,11 +5,89 @@ import os                 # needed for the menus to clear the screen, also will 
 import time
 import json
 import requests
+import re
+from prettytable import PrettyTable
 
 DEBUG = True
 
 logger.remove() #remove default sink because it also logs debug messages
 logger.add(sys.stderr, format="|{time}| - |{level}| - | {message}", level="DEBUG" if DEBUG == True else "INFO") #add our own sink because we can control if it has debug messages or not
+
+
+class TableClass:
+    def __init__(self):
+        pass
+
+    def getVersions(self):
+        projectIDs = []
+        for project in projects.selectedProjects.values():
+            projectIDs.append(project['ID'])
+
+        parameters = {
+            "ids": json.dumps(projectIDs)
+        }
+
+        response = requests.get("https://api.modrinth.com/v2/projects", params=parameters)
+
+        projectVersions = {}
+
+        for i in response.json():
+            projectVersions[i["slug"]] = i["game_versions"]
+        
+        return projectVersions
+
+
+    def create(self):
+        table = PrettyTable()
+        
+        projectVersions = self.getVersions()
+
+        allVersions = []
+        releasePattern = re.compile(r"^\d+\.\d+\.\d+$")
+
+        for key, versions in projectVersions.items():
+            for version in versions:
+                if not version in allVersions:
+                    if releasePattern.match(version):
+                        allVersions.append(version)
+        
+
+        sorted_versions = sorted(
+            allVersions, 
+            key=lambda v: [int(x) for x in v.split(".")],  # convert each part to int
+            reverse=True
+        )
+
+        allVersions = sorted_versions
+
+        table.add_column("Versions", allVersions)
+
+
+
+        for project, versions in projectVersions.items():
+            versionsResult = []
+            for versionToCheck in allVersions:
+                if versionToCheck in versions:
+                    versionsResult.append("| x |")
+                else:
+                    versionsResult.append("|   |")
+            
+            table.add_column(project, versionsResult)
+
+        print(table)
+        print("\n press ENTER to exit")
+        while True:
+            key = readchar.readkey()
+            if key == readchar.key.ENTER:
+                break
+        
+
+
+            
+
+
+
+
 
 
 class ProjectsClass:
@@ -54,10 +132,6 @@ class ProjectsClass:
                     projects.selectedProjects[title] = self.projectsToAdd[title]
 
 
-        def byID(self):
-            menu.clear()
-            print("!not implemented!")
-            time.sleep(1)
     
     def RemoveProjects(self):
         Title = "Remove Projects"
@@ -88,7 +162,7 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
 
     class MainClass:      #main menu, then one with the choices 'Edit Projects' and 'quit'
         def __init__(self):
-            self.Options = ["Edit Projects", "Quit"] #the options of the menu
+            self.Options = ["Edit Projects", "Generate table", "Quit"] #the options of the menu
             self.CurOpt = 0 #the current option selected
             self.MenuName = "Main Menu"
         
@@ -98,23 +172,16 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
                 if Result == 0:
                     menu.EditProjects.execute()
                 if Result == 1:
+                    table.create()
+                if Result == 2:
                     quit(0)
     
     class EditProjectsMenuClass:
 
 
         class AddProjectsMenuClass:
-            def __init__(self):
-                self.Options = ["Search", "Add by ID"]
-                self.MenuTitle = "Add projects"
-                self.CurOpt = 0
             def execute(self):
-                result = menu.StartMenu(self.Options, self.MenuTitle, False)
-                if not result == None:
-                    if result == 0:
-                        projects.addProjects.bySearch()
-                    elif result == 1:
-                        projects.addProjects.byID()
+                projects.addProjects.bySearch() #originally there was another function (by ID) but it didnt quite work out so it got scrapped
   
 
 
@@ -217,6 +284,7 @@ class MenuClass: #Inside these are all the menus, this make it easy to trigger m
 
 menu = MenuClass()
 projects = ProjectsClass()
+table = TableClass()
 
 
 while True:
